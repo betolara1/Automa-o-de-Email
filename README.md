@@ -1,129 +1,171 @@
-# ✉️ Automação de Email Gmail
+# Automação de E-mail com Gmail
 
-## 📋 Sobre o Projeto
+## 🎯 Objetivo e Problema
 
-Script de automação em Python para envio de emails em massa através do Gmail. O projeto permite enviar emails automaticamente para múltiplos destinatários a partir de uma lista predefinida.
+**Problema:** Enviar e-mails repetitivos manualmente para uma lista de contatos consome muito tempo, é passível de erros humanos e não é escalável.
 
-## 🚀 Funcionalidades
+**Objetivo:** Automatizar o envio em massa de e-mails utilizando a conta do Gmail. O script lê uma lista de contatos a partir de um arquivo de texto e envia uma mensagem padronizada em formato HTML de forma iterativa, reaproveitando a mesma conexão com o servidor SMTP para evitar bloqueios e melhorar a performance.
 
-- Envio automatizado de emails
-- Suporte para múltiplos destinatários
-- Leitura automática de lista de emails
-- Integração com Gmail
+## 🏗️ Arquitetura
 
-## 🛠️ Pré-requisitos
+O funcionamento do script é simples e direto:
 
-- Python 3.x
-- Conta Gmail
-- Configuração de "Acesso a app menos seguro" ativada na conta Google
-- Arquivo de texto com lista de emails
+```mermaid
+sequenceDiagram
+    participant User as Usuário
+    participant Script as main.py
+    participant File as email.txt
+    participant SMTP as Servidor SMTP (Gmail)
 
-## ⚙️ Configuração
+    User->>Script: Executa o script
+    Script->>File: Lê lista de e-mails
+    File-->>Script: Retorna e-mails
+    Script->>SMTP: Abre conexão (TLS) e faz Login
+    SMTP-->>Script: Autenticado com sucesso
+    loop Para cada e-mail
+        Script->>SMTP: Envia mensagem (HTML)
+    end
+    Script->>SMTP: Encerra conexão
+    Script-->>User: Relatório de envio no console
+```
 
-1. Clone o repositório:
+## � Como Rodar
+
+### Pré-requisitos
+* Python 3.8+
+* Uma conta do Google (Gmail ou Google Workspace)
+* Senha de Aplicativo gerada na sua conta do Google (Autenticação em 2 fatores precisa estar ativa).
+
+### Ambiente de Desenvolvimento (Local)
+
+1. Clone o repositório ou baixe os arquivos.
+2. Certifique-se de que o arquivo `email.txt` está na mesma pasta, com um e-mail por linha.
+3. Edite o arquivo `main.py` e insira suas credenciais:
+   ```python
+   meu_email = "seu_email@dominio.com"
+   minha_senha = "sua_senha_de_app"
+   ```
+4. Execute o script no terminal:
    ```bash
-   git clone https://github.com/betolara1/Automacao-de-Email-Gmail.git
-   cd Automacao-de-Email-Gmail
+   python main.py
+   ```
 
+## � Exemplos de Input/Output
 
-2. Crie um arquivo `email.txt` com a lista de destinatários:
+Como não é uma API HTTP, o "request/response" se dá pelo arquivo de texto e saída no terminal:
 
-```plaintext
-abc@abc.com
-dce@dcr.com
-par@par.com
+**Input (`email.txt`):**
+```text
+contato1@empresa.com
+cliente2@email.com
 ```
 
-
-
-## 📝 Como Usar
-
-1. Prepare o arquivo `email.txt`:
-
-1. Cada email deve estar em uma linha separada
-2. Não deixe linhas em branco
-3. Formato: um email por linha
-
-
-
-2. Execute o script:
-```shellscript
-python main.py
+**Output (Console):**
+```text
+Foram encontrados 2 e-mails para envio.
+Email enviado com sucesso para: contato1@empresa.com
+Email enviado com sucesso para: cliente2@email.com
 ```
 
+## 🐳 Docker
 
-## 📁 Estrutura do Projeto
+Se preferir rodar o script em um container isolado sem se preocupar com a versão do Python instalada na sua máquina, utilize o Docker.
 
-```plaintext
-Automacao-de-Email-Gmail/
-├── main.py        # Script principal de automação
-├── email.txt      # Lista de destinatários
-└── README.md      # Documentação
+Crie um arquivo chamado `Dockerfile` na raiz do projeto:
+
+```dockerfile
+# Usa uma imagem oficial e leve do Python
+FROM python:3.11-slim
+
+# Define o diretório de trabalho dentro do container
+WORKDIR /app
+
+# Copia os arquivos do projeto
+COPY main.py .
+COPY email.txt .
+
+# Comando padrão ao iniciar o container
+CMD ["python", "main.py"]
 ```
 
-## ⚠️ Observações Importantes
-
-1. O nome do arquivo de emails deve ser **exatamente** "email.txt"
-2. Se precisar mudar o nome do arquivo, atualize também no script
-3. Certifique-se de que sua conta Google permite acesso a apps menos seguros
-4. Mantenha suas credenciais seguras e não as compartilhe
-
-
-## 🔒 Segurança
-
-- Não compartilhe suas credenciais do Gmail
-- Use uma conta secundária para testes
-- Considere usar variáveis de ambiente para credenciais
-- Evite compartilhar o arquivo email.txt com dados sensíveis
-
-
-## 🤝 Contribuições
-
-Contribuições são bem-vindas! Para contribuir:
-
-1. Faça um Fork do projeto
-2. Crie uma branch para sua feature (`git checkout -b feature/NovaFeature`)
-3. Commit suas alterações (`git commit -m 'Adiciona nova feature'`)
-4. Push para a branch (`git push origin feature/NovaFeature`)
-5. Abra um Pull Request
-
-
-## 📄 Licença
-
-Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
-
-## 👤 Autor
-
-- GitHub: [@betolara1](https://github.com/betolara1)
-
-
-## 📧 Exemplo de Formato do email.txt
-
-```plaintext
-abc@abc.com
-dce@dcr.com
-par@par.com
+Para rodar usando Docker:
+```bash
+docker build -t automacao-email .
+docker run --rm automacao-email
 ```
 
-## ❗ Troubleshooting
+## 🧪 Testes
 
-1. Se o script apresentar erro, verifique:
+Para garantir que a lógica principal não quebre (por exemplo, a extração de e-mails), você pode adicionar testes unitários usando o `pytest`.
 
-1. Se o arquivo email.txt existe no diretório
-2. Se o nome do arquivo está correto
-3. Se o formato dos emails está correto
-4. Se suas credenciais do Gmail estão corretas
+Crie um arquivo `test_main.py`:
 
+```python
+import pytest
+from unittest.mock import patch
 
+# Cria um arquivo de texto temporário para testar a leitura corretamente
+def test_leitura_arquivo_emails(tmp_path):
+    d = tmp_path / "sub"
+    d.mkdir()
+    p = d / "email.txt"
+    p.write_text(" teste1@email.com \n teste2@email.com\n\n")
+    
+    with open(p, "r") as arquivo:
+        emails = [linha.strip() for linha in arquivo.readlines() if linha.strip()]
+        
+    assert len(emails) == 2
+    assert emails[0] == "teste1@email.com"
+    assert emails[1] == "teste2@email.com"
+```
 
-2. Em caso de erro de autenticação:
+Para rodar os testes localmente:
+```bash
+pip install pytest
+pytest test_main.py
+```
 
-1. Verifique suas configurações de segurança do Google
-2. Certifique-se que o acesso a apps menos seguros está ativado
-3. Tente usar uma autenticação de dois fatores com senha de app
+## ⚙️ GitHub Actions (CI)
 
+Podemos automatizar a checagem de qualidade do código assim que ele for "upado" no GitHub.
+Crie o arquivo `.github/workflows/ci.yml` no seu repositório:
 
+```yaml
+name: Python CI
 
----
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 
-⭐️ Se este projeto te ajudou, considere dar uma estrela no GitHub!
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.11"
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install flake8 pytest
+
+    - name: Lint with flake8
+      run: |
+        # Para o build se houver erros de sintaxe ou variáveis não definidas
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        # Avisos padrão
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+    - name: Test with pytest
+      run: |
+        pytest
+```
+
+Esta pipeline irá automaticamente: rodar na nuvem do GitHub, instalar o Python, buscar erros de sintaxe (`flake8`) e rodar seus testes unitários (`pytest`) toda vez que você atualizar o código.
